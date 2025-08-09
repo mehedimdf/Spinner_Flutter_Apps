@@ -6,7 +6,8 @@ import '../../../utils/app_images/app_images.dart';
 import '../../components/custom_image/custom_image.dart';
 import '../../components/custom_text/custom_text.dart';
 class GameOverScreen extends StatelessWidget {
-  const GameOverScreen({super.key});
+  final int rewardPoints;
+  const GameOverScreen({super.key, required this.rewardPoints, });
 
   @override
   Widget build(BuildContext context) {
@@ -35,9 +36,9 @@ class GameOverScreen extends StatelessWidget {
                 ),
                 GestureDetector(
                     onTap: (){
-                      //Get.toNamed(AppRoutes.gameOverScreen);
+                      Get.toNamed(AppRoutes.customizeScreen);
                     },
-                    child: CustomImage(imageSrc: AppImages.ticketsImage)),
+                    child: CustomImage(imageSrc: AppImages.setting, height: 50.h, width: 50.w)),
               ],
             ),
           ),
@@ -46,8 +47,9 @@ class GameOverScreen extends StatelessWidget {
             left: 0.w,
             top: 440.h,
             child: CustomText(
-              text: "\$ : 200",
-              color: const Color(0xff208A9B),
+              text: "300",
+             // text:  "You won $rewardPoints points!",
+              color: const Color(0xffB6480B),
               fontSize: 20.sp,
               fontWeight: FontWeight.w800,
             ),
@@ -74,7 +76,7 @@ class GameOverScreen extends StatelessWidget {
             ),
           ),
         ],
-      ),
+       ),
 
 
     );
