@@ -10,9 +10,14 @@ import '../../components/custom_text/custom_text.dart';
 import '../game_over_screen/game_over_screen.dart';
 
 class SpinScreen extends StatefulWidget {
-  final String backgroundImage; // background image from CustomizeScreen
+  final String backgroundImage; // path or url
+  final String wheelImage; // path or url
 
-  const SpinScreen({Key? key, required this.backgroundImage}) : super(key: key);
+  const SpinScreen({
+    super.key,
+    required this.backgroundImage,
+    required this.wheelImage,
+  });
 
   @override
   State<SpinScreen> createState() => _SpinWheelState();
@@ -25,10 +30,10 @@ class _SpinWheelState extends State<SpinScreen> {
 
   final List<Map<String, dynamic>> candyItems = [
     {"image": AppImages.candy1, "point": 100},
-    {"image": AppImages.candy5, "point": 0},
+    {"image": AppImages.candy5, "point": 200},
     {"image": AppImages.candy3, "point": 300},
     {"image": AppImages.candy4, "point": 400},
-    {"image": AppImages.candy2, "point": 200},
+    {"image": AppImages.candy2, "point": 0},
   ];
 
   @override
@@ -48,27 +53,34 @@ class _SpinWheelState extends State<SpinScreen> {
         "No Spins Left",
         "You have used all your spins.",
         snackPosition: SnackPosition.TOP,
-        backgroundColor: Colors.redAccent,
-        colorText: Colors.white,
+        backgroundColor: Colors.white.withValues(alpha: 0.2),
+        colorText: Colors.black,
       );
     }
   }
 
+  Widget loadImage(String? src, {BoxFit fit = BoxFit.cover, String? fallback}) {
+    if (src != null && src.isNotEmpty) {
+      if (src.startsWith('http')) {
+        return Image.network(src, fit: fit);
+      } else {
+        return Image.asset(src, fit: fit);
+      }
+    }
+    return Image.asset(fallback ?? AppImages.customizeImageOne, fit: fit);
+  }
+
   @override
   Widget build(BuildContext context) {
-    final size = MediaQuery.sizeOf(context);
-
     return Scaffold(
       body: Stack(
         clipBehavior: Clip.none,
         children: [
           Positioned.fill(
-            child: CustomImage(
-              imageSrc: widget.backgroundImage, // Set selected background
-              width: size.width,
-              height: size.height,
-              boxFit: BoxFit.cover,
+            child: loadImage(
+              widget.backgroundImage,
               fit: BoxFit.cover,
+              fallback: AppImages.customizeImageOne,
             ),
           ),
           Positioned(
@@ -122,70 +134,30 @@ class _SpinWheelState extends State<SpinScreen> {
             ),
           ),
           Positioned(
-            bottom: 40.h,
+            top: 300.h,
             left: 0,
             right: 0,
             child: Center(
               child: Column(
                 children: [
-                  Container(
-                    decoration: BoxDecoration(
-                      border: Border.all(color: const Color(0xffb40e6a), width: 10),
-                      shape: BoxShape.circle,
-                    ),
-                    child: SizedBox(
-                      height: 240,
-                      child: FortuneWheel(
-                        selected: selected.stream,
-                        animateFirst: false,
-                        items: [
-                          for (int i = 0; i < candyItems.length; i++)
-                            FortuneItem(
-                              child: Column(
-                                mainAxisSize: MainAxisSize.min,
-                                children: [
-                                  CustomImage(
-                                    imageSrc: candyItems[i]["image"],
-                                    width: 50.w,
-                                    height: 50.w,
-                                  ),
-                                ],
-                              ),
-                              style: FortuneItemStyle(
-                                color: [
-                                  Color(0xffff6646),
-                                  Color(0xff006cb4),
-                                  Color(0xff01b78f),
-                                  Color(0xffffec83),
-                                  Color(0xff4a4a4a),
-                                ][i],
-                                borderColor: Colors.transparent,
-                              ),
-                            ),
-                        ],
-                        onAnimationEnd: () {
-                          setState(() {
-                            rewards = candyItems[selected.value]["point"];
-                          });
-
-                          if (remainingSpins == 0) {
-                            if (rewards > 0) {
-                              Get.to(() => GameOverScreen(rewardPoints: rewards));
-                            } else {
-                              Get.snackbar(
-                                "Better Luck Next Time",
-                                "You scored 0 points.",
-                                snackPosition: SnackPosition.TOP,
-                                backgroundColor: Colors.orangeAccent,
-                                colorText: Colors.white,
-                              );
-                            }
-                          }
-                        },
+                  Stack(
+                    alignment: Alignment.center,
+                    children: [
+                      Padding(
+                        padding: const EdgeInsets.all(16.0),
+                        child: ClipOval(
+                          child: loadImage(
+                            widget.wheelImage,
+                            fit: BoxFit.cover,
+                            fallback: AppImages.wheelOne,
+                          ),
+                        ),
                       ),
-                    ),
+
+                    ],
                   ),
-                  SizedBox(height: 120.h),
+
+                 // SizedBox(height: 50.h),
                   GestureDetector(
                     onTap: spinWheel,
                     child: Opacity(
@@ -197,6 +169,61 @@ class _SpinWheelState extends State<SpinScreen> {
               ),
             ),
           ),
+          Positioned(
+            left: 0,
+            right: 0,
+            top: 380.h,
+            child:  SizedBox(
+              height: 240.h,
+              child: FortuneWheel(
+                selected: selected.stream,
+                animateFirst: false,
+                items: [
+                  for (int i = 0; i < candyItems.length; i++)
+                    FortuneItem(
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          CustomImage(
+                            imageSrc: candyItems[i]["image"],
+                            width: 50.w,
+                            height: 50.w,
+                          ),
+                        ],
+                      ),
+                      style: FortuneItemStyle(
+                        color: [
+                          const Color(0xffff6646),
+                          const Color(0xff006cb4),
+                          const Color(0xff01b78f),
+                          const Color(0xffffec83),
+                          const Color(0xff4a4a4a),
+                        ][i],
+                        borderColor: Colors.transparent,
+                      ),
+                    ),
+                ],
+                onAnimationEnd: () {
+                  setState(() {
+                    rewards = candyItems[selected.value]["point"];
+                  });
+
+                  if (remainingSpins == 0) {
+                    if (rewards > 0) {
+                      Get.to(() => GameOverScreen(rewardPoints: rewards));
+                    } else {
+                      Get.snackbar(
+                        "Better Luck Next Time",
+                        "You scored 0 points.",
+                        snackPosition: SnackPosition.TOP,
+                        backgroundColor: Colors.orangeAccent,
+                        colorText: Colors.white,
+                      );
+                    }
+                  }
+                },
+              ),
+            ),),
         ],
       ),
     );

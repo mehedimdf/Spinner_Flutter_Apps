@@ -16,25 +16,44 @@ class CustomizeScreen extends StatefulWidget {
 }
 
 class _CustomizeScreenState extends State<CustomizeScreen> {
-  // List of background images
-  final List<String> _backgroundImages = [
+  final List<String> backgroundImages = [
     AppImages.customizeImageOne,
     AppImages.customizeImageTwo,
     AppImages.customizeImageThree,
   ];
 
-  int _currentIndex = 0;
+  final List<String> wheelImages = [
+    AppImages.wheelOne,
+    AppImages.wheelTwo,
+    AppImages.wheelThree,
+  ];
+
+  int backgroundCurrentIndex = 0;
+  int wheelCurrentIndex = 0;
 
   void _nextImage() {
     setState(() {
-      _currentIndex = (_currentIndex + 1) % _backgroundImages.length;
+      backgroundCurrentIndex = (backgroundCurrentIndex + 1) % backgroundImages.length;
     });
   }
 
   void _previousImage() {
     setState(() {
-      _currentIndex = (_currentIndex - 1 + _backgroundImages.length) %
-          _backgroundImages.length;
+      backgroundCurrentIndex =
+          (backgroundCurrentIndex - 1 + backgroundImages.length) % backgroundImages.length;
+    });
+  }
+
+  void nextWheel() {
+    setState(() {
+      wheelCurrentIndex = (wheelCurrentIndex + 1) % wheelImages.length;
+    });
+  }
+
+  void previousWheel() {
+    setState(() {
+      wheelCurrentIndex =
+          (wheelCurrentIndex - 1 + wheelImages.length) % wheelImages.length;
     });
   }
 
@@ -45,20 +64,19 @@ class _CustomizeScreenState extends State<CustomizeScreen> {
       body: Stack(
         clipBehavior: Clip.none,
         children: [
-          // Background image that changes
           CustomImage(
-            imageSrc: _backgroundImages[_currentIndex],
+            imageSrc: backgroundImages[backgroundCurrentIndex],
             width: size.width,
             height: size.height,
             boxFit: BoxFit.cover,
             fit: BoxFit.cover,
           ),
           Positioned(
-              left: 20,
-              right: 0,
-              top: 120,
-              bottom: 0,
-              child: CustomImage(imageSrc: AppImages.Wheel)),
+            left: 0,
+            right: 0,
+            top: 180.h,
+            child: CustomImage(imageSrc: wheelImages[wheelCurrentIndex]),
+          ),
           Positioned(
             right: 10,
             top: 60.h,
@@ -78,57 +96,93 @@ class _CustomizeScreenState extends State<CustomizeScreen> {
             right: 0,
             top: 150.h,
             left: 0,
-            child: CustomText(
-              text: "Customize",
-              fontSize: 32.w,
-              fontWeight: FontWeight.w900,
-              color: AppColors.white,
+            child: Padding(
+              padding: const EdgeInsets.all(20.0),
+              child: CustomImage(imageSrc: AppImages.customizeText),
             ),
           ),
           Positioned(
             right: 20,
-            bottom: 130.h,
+            bottom: 110.h,
             left: 20,
-            child: Container(
-              padding: EdgeInsets.symmetric(vertical: 8.h),
-              decoration: BoxDecoration(
-                color: const Color(0xffffc266),
-                borderRadius: BorderRadius.circular(16),
-                border: Border.all(color: AppColors.white, width: 5),
-              ),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  IconButton(
-                    onPressed: _previousImage,
-                    icon: CustomImage(imageSrc: AppImages.arrowLeft),
+            child: Column(
+              children: [
+                Container(
+                  padding: EdgeInsets.symmetric(vertical: 2.h),
+                  decoration: BoxDecoration(
+                    color: const Color(0xffffc266),
+                    borderRadius: BorderRadius.circular(16),
+                    border: Border.all(color: AppColors.white, width: 5),
                   ),
-                  CustomImage(imageSrc: AppImages.imageIcon),
-                  CustomImage(imageSrc: AppImages.BackgroundText),
-                  CustomImage(imageSrc: AppImages.coinIcon),
-                  CustomText(
-                    text: "150",
-                    fontSize: 22.w,
-                    fontWeight: FontWeight.w900,
-                    color: const Color(0xffB6480B),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      IconButton(
+                        onPressed: _previousImage,
+                        icon: CustomImage(imageSrc: AppImages.arrowLeft),
+                      ),
+                      CustomImage(imageSrc: AppImages.imageIcon),
+                      CustomImage(imageSrc: AppImages.BackgroundText),
+                      CustomImage(imageSrc: AppImages.coinIcon),
+                      CustomText(
+                        text: "150",
+                        fontSize: 22.w,
+                        fontWeight: FontWeight.w900,
+                        color: const Color(0xffB6480B),
+                      ),
+                      IconButton(
+                        onPressed: _nextImage,
+                        icon: CustomImage(imageSrc: AppImages.arrowRight),
+                      ),
+                    ],
                   ),
-                  IconButton(
-                    onPressed: _nextImage,
-                    icon: CustomImage(imageSrc: AppImages.arrowRight),
+                ),
+                SizedBox(height: 10.h),
+                Container(
+                  padding: EdgeInsets.symmetric(vertical: 2.h),
+                  decoration: BoxDecoration(
+                    color: const Color(0xffffc266),
+                    borderRadius: BorderRadius.circular(16),
+                    border: Border.all(color: AppColors.white, width: 5),
                   ),
-                ],
-              ),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      IconButton(
+                        onPressed: previousWheel,
+                        icon: CustomImage(imageSrc: AppImages.arrowLeft),
+                      ),
+                      CustomImage(imageSrc: AppImages.wheelIcon),
+                      CustomImage(imageSrc: AppImages.wheelText),
+                      CustomImage(imageSrc: AppImages.coinIcon),
+                      CustomText(
+                        text: "150",
+                        fontSize: 22.w,
+                        fontWeight: FontWeight.w900,
+                        color: const Color(0xffB6480B),
+                      ),
+                      IconButton(
+                        onPressed: nextWheel,
+                        icon: CustomImage(imageSrc: AppImages.arrowRight),
+                      ),
+                    ],
+                  ),
+                )
+              ],
             ),
           ),
           Positioned(
             right: 0,
-            bottom: 70.h,
+            bottom: 50.h,
             left: 0,
             child: GestureDetector(
               onTap: () {
                 Get.toNamed(
                   AppRoutes.spinScreen,
-                  arguments: _backgroundImages[_currentIndex],
+                  arguments: {
+                    'backgroundImage': backgroundImages[backgroundCurrentIndex],
+                    'wheelImage': wheelImages[wheelCurrentIndex],
+                  },
                 );
               },
               child: CustomImage(imageSrc: AppImages.play, height: 50),
@@ -139,3 +193,4 @@ class _CustomizeScreenState extends State<CustomizeScreen> {
     );
   }
 }
+

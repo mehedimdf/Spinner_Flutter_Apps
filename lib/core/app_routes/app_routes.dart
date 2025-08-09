@@ -17,23 +17,23 @@ class AppRoutes {
   static const String splashScreen = "/SplashScreen";
   static const String customizeScreen = "/CustomizeScreen";
 
-
-
   static List<GetPage> routes = [
     ///=========================== Screen Routes  ==========================
     GetPage(name: startScreen, page: () => StartScreen()),
     GetPage(
       name: AppRoutes.spinScreen,
       page: () {
-        final args = Get.arguments as String? ?? ''; // null-safe
-        return SpinScreen(backgroundImage: args);
+        final args = Get.arguments as Map<String, String>? ?? {};
+        return SpinScreen(
+          backgroundImage: args['backgroundImage'] ?? '',
+          wheelImage: args['wheelImage'] ?? '',
+        );
       },
     ),
+
     GetPage(name: giftScreen, page: () => GiftScreen()),
     //GetPage(name: gameOverScreen, page: () => GameOverScreen(rewardPoints: null,)),
     GetPage(name: splashScreen, page: () => SplashScreen()),
     GetPage(name: customizeScreen, page: () => CustomizeScreen()),
-
-
   ];
 }

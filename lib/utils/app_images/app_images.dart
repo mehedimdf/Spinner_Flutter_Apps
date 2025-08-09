@@ -27,10 +27,6 @@ class AppImages {
   static const String BackgroundText = "$basePath/BackgroundText.png";
   static const String coinIcon = "$basePath/coinIcon.png";
   static const String play = "$basePath/play.png";
-  static const String Wheel = "$basePath/Wheel.png";
-  static const String customizeImageOne = "$basePath/customizeImage_one.png";
-  static const String customizeImageTwo = "$basePath/customize_image_two.png";
-  static const String customizeImageThree = "$basePath/customize_image_three.png";
   static const String candy1 = "$basePath/candy1.svg";
   static const String candy2 = "$basePath/candy2.svg";
   static const String candy3 = "$basePath/candy3.svg";
@@ -39,6 +35,18 @@ class AppImages {
   static const String tickets = "$basePath/tickets.svg";
   static const String coin = "$basePath/coin.svg";
 
+  //====================== Customize Image =========================
+  static const String customizeImageOne = "$basePath/customizeImageOne.png";
+  static const String customizeImageTwo = "$basePath/customizeImageTwo.png";
+  static const String customizeImageThree = "$basePath/customizeImageThree.png";
+  static const String customizeText = "$basePath/customizeText.svg";
+
+  //====================== Wheel Image =========================
+  static const String wheelOne = "$basePath/wheelOne.png";
+  static const String wheelTwo = "$basePath/wheelTwo.png";
+  static const String wheelThree = "$basePath/wheelThree.png";
+  static const String wheelIcon = "$basePath/wheelIcon.png";
+  static const String wheelText = "$basePath/wheelText.png";
 
 
 
