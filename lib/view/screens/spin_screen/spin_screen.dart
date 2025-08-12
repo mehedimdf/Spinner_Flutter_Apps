@@ -3,6 +3,7 @@ import 'package:flutter_fortune_wheel/flutter_fortune_wheel.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:rxdart/rxdart.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../../../core/app_routes/app_routes.dart';
 import '../../../utils/app_images/app_images.dart';
 import '../../components/custom_image/custom_image.dart';
@@ -10,8 +11,8 @@ import '../../components/custom_text/custom_text.dart';
 import '../game_over_screen/game_over_screen.dart';
 
 class SpinScreen extends StatefulWidget {
-  final String backgroundImage; // path or url
-  final String wheelImage; // path or url
+  final String backgroundImage;
+  final String wheelImage;
 
   const SpinScreen({
     super.key,
@@ -23,10 +24,15 @@ class SpinScreen extends StatefulWidget {
   State<SpinScreen> createState() => _SpinWheelState();
 }
 
-class _SpinWheelState extends State<SpinScreen> {
+class _SpinWheelState extends State<SpinScreen> with SingleTickerProviderStateMixin {
   final selected = BehaviorSubject<int>();
   int rewards = 0;
+  int totalRewards = 0;
   int remainingSpins = 3;
+  int winCount = 0;
+
+  late AnimationController _btnController;
+  late Animation<double> _btnAnimation;
 
   final List<Map<String, dynamic>> candyItems = [
     {"image": AppImages.candy1, "point": 100},
@@ -35,11 +41,43 @@ class _SpinWheelState extends State<SpinScreen> {
     {"image": AppImages.candy4, "point": 400},
     {"image": AppImages.candy2, "point": 0},
   ];
+  final String rewardsKey = 'total_rewards';
+
+  @override
+  void initState() {
+    super.initState();
+    _loadTotalRewards();
+
+    // Spin button animation controller
+    _btnController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 150),
+      lowerBound: 0.0,
+      upperBound: 0.3,
+    );
+    _btnAnimation = CurvedAnimation(
+      parent: _btnController,
+      curve: Curves.easeInOut,
+    );
+  }
 
   @override
   void dispose() {
     selected.close();
+    _btnController.dispose();
     super.dispose();
+  }
+
+  Future<void> _loadTotalRewards() async {
+    final prefs = await SharedPreferences.getInstance();
+    setState(() {
+      totalRewards = prefs.getInt(rewardsKey) ?? 0;
+    });
+  }
+
+  Future<void> _saveTotalRewards() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setInt(rewardsKey, totalRewards);
   }
 
   void spinWheel() {
@@ -49,13 +87,28 @@ class _SpinWheelState extends State<SpinScreen> {
         remainingSpins--;
       });
     } else {
-      Get.snackbar(
-        "No Spins Left",
-        "You have used all your spins.",
-        snackPosition: SnackPosition.TOP,
-        backgroundColor: Colors.white.withValues(alpha: 0.2),
-        colorText: Colors.black,
-      );
+      // no spins left → deduct 10 points
+      if (totalRewards >= 10) {
+        setState(() {
+          totalRewards -= 10;
+        });
+        _saveTotalRewards();
+        Get.snackbar(
+          "Spin Without Ticket",
+          "10 points deducted from total rewards!",
+          snackPosition: SnackPosition.TOP,
+          backgroundColor: Colors.red.withValues(alpha: 0.3),
+          colorText: Colors.black,
+        );
+      } else {
+        Get.snackbar(
+          "No Spins Left",
+          "You don't have enough points to spin without tickets.",
+          snackPosition: SnackPosition.TOP,
+          backgroundColor: Colors.white.withValues(alpha: 0.2),
+          colorText: Colors.black,
+        );
+      }
     }
   }
 
@@ -72,10 +125,12 @@ class _SpinWheelState extends State<SpinScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final size = MediaQuery.sizeOf(context);
     return Scaffold(
       body: Stack(
         clipBehavior: Clip.none,
         children: [
+          // BG image
           Positioned.fill(
             child: loadImage(
               widget.backgroundImage,
@@ -83,6 +138,7 @@ class _SpinWheelState extends State<SpinScreen> {
               fallback: AppImages.customizeImageOne,
             ),
           ),
+          // Top bar buttons
           Positioned(
             right: 10,
             top: 60.h,
@@ -103,6 +159,7 @@ class _SpinWheelState extends State<SpinScreen> {
               ],
             ),
           ),
+          // Tickets & Win Icons
           Positioned(
             right: 10,
             top: 120.h,
@@ -113,6 +170,18 @@ class _SpinWheelState extends State<SpinScreen> {
               ],
             ),
           ),
+          // Total Rewards
+          Positioned(
+            right: 40.w,
+            top: 80.h,
+            child: CustomText(
+              text: "$totalRewards",
+              color: const Color(0xffB6480B),
+              fontSize: 12.sp,
+              fontWeight: FontWeight.w800,
+            ),
+          ),
+          // Remaining spins
           Positioned(
             right: 80.w,
             top: 160.h,
@@ -123,9 +192,10 @@ class _SpinWheelState extends State<SpinScreen> {
               fontWeight: FontWeight.w800,
             ),
           ),
+          // Current rewards
           Positioned(
             right: 70.w,
-            top: 316.h,
+            top: 320.h,
             child: CustomText(
               text: "$rewards",
               color: const Color(0xffB6480B),
@@ -133,8 +203,9 @@ class _SpinWheelState extends State<SpinScreen> {
               fontWeight: FontWeight.w800,
             ),
           ),
+          // Wheel & Button
           Positioned(
-            top: 300.h,
+            top: size.height * .4 - 40.h,
             left: 0,
             right: 0,
             child: Center(
@@ -153,27 +224,37 @@ class _SpinWheelState extends State<SpinScreen> {
                           ),
                         ),
                       ),
-
                     ],
                   ),
-
-                 // SizedBox(height: 50.h),
                   GestureDetector(
-                    onTap: spinWheel,
-                    child: Opacity(
-                      opacity: remainingSpins > 0 ? 1.0 : 0.4,
-                      child: CustomImage(imageSrc: AppImages.spinButton),
+                    onTapDown: (_) => _btnController.forward(), // press effect
+                    onTapUp: (_) {
+                      _btnController.reverse();
+                      spinWheel();
+                    },
+                    child: AnimatedBuilder(
+                      animation: _btnAnimation,
+                      builder: (context, child) {
+                        return Transform.scale(
+                          scale: 1 - _btnAnimation.value,
+                          child: Opacity(
+                            opacity: remainingSpins > 0 ? 1.0 : 0.4,
+                            child: CustomImage(imageSrc: AppImages.spinButton),
+                          ),
+                        );
+                      },
                     ),
                   ),
                 ],
               ),
             ),
           ),
+          // Fortune Wheel
           Positioned(
             left: 0,
             right: 0,
-            top: 380.h,
-            child:  SizedBox(
+            top: size.height * .5 - 40.h,
+            child: SizedBox(
               height: 240.h,
               child: FortuneWheel(
                 selected: selected.stream,
@@ -206,8 +287,18 @@ class _SpinWheelState extends State<SpinScreen> {
                 onAnimationEnd: () {
                   setState(() {
                     rewards = candyItems[selected.value]["point"];
+                    totalRewards += rewards;
+                    if (rewards > 0) winCount++;
                   });
+                  _saveTotalRewards();
 
+                  // Check for 3 wins
+                  if (winCount >= 3) {
+                    Get.to(() => GameOverScreen(rewardPoints: totalRewards));
+                    return;
+                  }
+
+                  // If spins ended
                   if (remainingSpins == 0) {
                     if (rewards > 0) {
                       Get.to(() => GameOverScreen(rewardPoints: rewards));
@@ -216,14 +307,15 @@ class _SpinWheelState extends State<SpinScreen> {
                         "Better Luck Next Time",
                         "You scored 0 points.",
                         snackPosition: SnackPosition.TOP,
-                        backgroundColor: Colors.orangeAccent,
-                        colorText: Colors.white,
+                        backgroundColor: Colors.white.withOpacity(0.2),
+                        colorText: Colors.black,
                       );
                     }
                   }
                 },
               ),
-            ),),
+            ),
+          ),
         ],
       ),
     );

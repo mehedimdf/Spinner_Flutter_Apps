@@ -6,7 +6,6 @@ import '../../../core/app_routes/app_routes.dart';
 import '../../../utils/app_images/app_images.dart';
 import '../../components/custom_image/custom_image.dart';
 import '../../components/custom_text/custom_text.dart';
-import '../spin_screen/spin_screen.dart';
 
 class CustomizeScreen extends StatefulWidget {
   const CustomizeScreen({super.key});
@@ -16,31 +15,49 @@ class CustomizeScreen extends StatefulWidget {
 }
 
 class _CustomizeScreenState extends State<CustomizeScreen> {
+  late int rewardPoints;
+
+  // Background data
   final List<String> backgroundImages = [
     AppImages.customizeImageOne,
     AppImages.customizeImageTwo,
     AppImages.customizeImageThree,
   ];
+  final List<int> backgroundCosts = [0, 150, 300];
+  List<bool> backgroundUnlocked = [true, false, false];
 
+  // Wheel data
   final List<String> wheelImages = [
     AppImages.wheelOne,
     AppImages.wheelTwo,
     AppImages.wheelThree,
   ];
+  final List<int> wheelCosts = [0, 200, 400];
+  List<bool> wheelUnlocked = [true, false, false];
 
   int backgroundCurrentIndex = 0;
   int wheelCurrentIndex = 0;
 
+  @override
+  void initState() {
+    super.initState();
+    // Arguments থেকে ডাটা নেওয়া
+    final args = Get.arguments as Map<String, dynamic>? ?? {};
+    rewardPoints = args['rewardPoints'] ?? 0;
+  }
+
   void _nextImage() {
     setState(() {
-      backgroundCurrentIndex = (backgroundCurrentIndex + 1) % backgroundImages.length;
+      backgroundCurrentIndex =
+          (backgroundCurrentIndex + 1) % backgroundImages.length;
     });
   }
 
   void _previousImage() {
     setState(() {
       backgroundCurrentIndex =
-          (backgroundCurrentIndex - 1 + backgroundImages.length) % backgroundImages.length;
+          (backgroundCurrentIndex - 1 + backgroundImages.length) %
+              backgroundImages.length;
     });
   }
 
@@ -55,6 +72,30 @@ class _CustomizeScreenState extends State<CustomizeScreen> {
       wheelCurrentIndex =
           (wheelCurrentIndex - 1 + wheelImages.length) % wheelImages.length;
     });
+  }
+
+  void _buyBackground() {
+    int cost = backgroundCosts[backgroundCurrentIndex];
+    if (rewardPoints >= cost) {
+      setState(() {
+        rewardPoints -= cost;
+        backgroundUnlocked[backgroundCurrentIndex] = true;
+      });
+    } else {
+      Get.snackbar("Error", "Not enough points to buy this background");
+    }
+  }
+
+  void _buyWheel() {
+    int cost = wheelCosts[wheelCurrentIndex];
+    if (rewardPoints >= cost) {
+      setState(() {
+        rewardPoints -= cost;
+        wheelUnlocked[wheelCurrentIndex] = true;
+      });
+    } else {
+      Get.snackbar("Error", "Not enough points to buy this wheel");
+    }
   }
 
   @override
@@ -74,7 +115,7 @@ class _CustomizeScreenState extends State<CustomizeScreen> {
           Positioned(
             left: 0,
             right: 0,
-            top: 180.h,
+            top: 150.h,
             child: CustomImage(imageSrc: wheelImages[wheelCurrentIndex]),
           ),
           Positioned(
@@ -85,16 +126,34 @@ class _CustomizeScreenState extends State<CustomizeScreen> {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 InkWell(
-                  onTap: () => Navigator.pop(context),
+                  onTap: () => Navigator.pop(context, rewardPoints),
                   child: CustomImage(imageSrc: AppImages.arrowImage),
                 ),
-                const SizedBox()
+                Container(
+                  padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 5.h),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(10.r),
+                  ),
+                  child: Row(
+                    children: [
+                      CustomImage(
+                          imageSrc: AppImages.coinIcon, height: 20, width: 20),
+                      SizedBox(width: 5.w),
+                      CustomText(
+                        text: "$rewardPoints",
+                        fontSize: 18.sp,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ],
+                  ),
+                ),
               ],
             ),
           ),
           Positioned(
             right: 0,
-            top: 150.h,
+            top: 120.h,
             left: 0,
             child: Padding(
               padding: const EdgeInsets.all(20.0),
@@ -107,6 +166,7 @@ class _CustomizeScreenState extends State<CustomizeScreen> {
             left: 20,
             child: Column(
               children: [
+                // Background Selection
                 Container(
                   padding: EdgeInsets.symmetric(vertical: 2.h),
                   decoration: BoxDecoration(
@@ -122,13 +182,25 @@ class _CustomizeScreenState extends State<CustomizeScreen> {
                         icon: CustomImage(imageSrc: AppImages.arrowLeft),
                       ),
                       CustomImage(imageSrc: AppImages.imageIcon),
-                      CustomImage(imageSrc: AppImages.BackgroundText),
-                      CustomImage(imageSrc: AppImages.coinIcon),
-                      CustomText(
-                        text: "150",
-                        fontSize: 22.w,
-                        fontWeight: FontWeight.w900,
-                        color: const Color(0xffB6480B),
+                      if (!backgroundUnlocked[backgroundCurrentIndex])
+                        ElevatedButton(
+                          onPressed: _buyBackground,
+                          child: const Text("Buy"),
+                        ),
+                      Row(
+                        children: [
+                          CustomImage(
+                              imageSrc: AppImages.coinIcon,
+                              height: 20,
+                              width: 20),
+                          SizedBox(width: 4.w),
+                          CustomText(
+                            text: "${backgroundCosts[backgroundCurrentIndex]}",
+                            fontSize: 20.w,
+                            fontWeight: FontWeight.w900,
+                            color: const Color(0xffB6480B),
+                          ),
+                        ],
                       ),
                       IconButton(
                         onPressed: _nextImage,
@@ -138,6 +210,7 @@ class _CustomizeScreenState extends State<CustomizeScreen> {
                   ),
                 ),
                 SizedBox(height: 10.h),
+                // Wheel Selection
                 Container(
                   padding: EdgeInsets.symmetric(vertical: 2.h),
                   decoration: BoxDecoration(
@@ -153,13 +226,25 @@ class _CustomizeScreenState extends State<CustomizeScreen> {
                         icon: CustomImage(imageSrc: AppImages.arrowLeft),
                       ),
                       CustomImage(imageSrc: AppImages.wheelIcon),
-                      CustomImage(imageSrc: AppImages.wheelText),
-                      CustomImage(imageSrc: AppImages.coinIcon),
-                      CustomText(
-                        text: "150",
-                        fontSize: 22.w,
-                        fontWeight: FontWeight.w900,
-                        color: const Color(0xffB6480B),
+                      if (!wheelUnlocked[wheelCurrentIndex])
+                        ElevatedButton(
+                          onPressed: _buyWheel,
+                          child: const Text("Buy"),
+                        ),
+                      Row(
+                        children: [
+                          CustomImage(
+                              imageSrc: AppImages.coinIcon,
+                              height: 20,
+                              width: 20),
+                          SizedBox(width: 4.w),
+                          CustomText(
+                            text: "${wheelCosts[wheelCurrentIndex]}",
+                            fontSize: 20.w,
+                            fontWeight: FontWeight.w900,
+                            color: const Color(0xffB6480B),
+                          ),
+                        ],
                       ),
                       IconButton(
                         onPressed: nextWheel,
@@ -167,7 +252,7 @@ class _CustomizeScreenState extends State<CustomizeScreen> {
                       ),
                     ],
                   ),
-                )
+                ),
               ],
             ),
           ),
@@ -182,6 +267,7 @@ class _CustomizeScreenState extends State<CustomizeScreen> {
                   arguments: {
                     'backgroundImage': backgroundImages[backgroundCurrentIndex],
                     'wheelImage': wheelImages[wheelCurrentIndex],
+                    //'rewardPoints': rewardPoints,
                   },
                 );
               },
@@ -193,4 +279,3 @@ class _CustomizeScreenState extends State<CustomizeScreen> {
     );
   }
 }
-

@@ -1,8 +1,6 @@
 // ignore_for_file: prefer_const_constructors
 import 'package:get/get.dart';
-
 import '../../view/screens/customize_screen/customize_screen.dart';
-import '../../view/screens/game_over_screen/game_over_screen.dart';
 import '../../view/screens/gift_screen/gift_screen.dart';
 import '../../view/screens/spin_screen/spin_screen.dart';
 import '../../view/screens/splash_screen/splash_screen.dart';
