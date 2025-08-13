@@ -82,7 +82,7 @@ class _SpinWheelState extends State<SpinScreen> with SingleTickerProviderStateMi
 
   void spinWheel() {
     if (remainingSpins > 0) {
-      selected.add(Fortune.randomInt(0, candyItems.length));
+      selected.add(Fortune.randomInt(0,  candyItems.length));
       setState(() {
         remainingSpins--;
       });
