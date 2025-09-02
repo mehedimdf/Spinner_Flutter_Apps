@@ -1,3 +1,4 @@
+import 'package:device_preview/device_preview.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -12,7 +13,17 @@ void main() async {
     statusBarIconBrightness: Brightness.dark, // Android: dark icons
     statusBarBrightness: Brightness.light, // iOS: light background
   ));
-  runApp(const MyApp());
+
+  runApp(
+    DevicePreview(
+      enabled: false, // Enable/Disable DevicePreview
+      tools: const [
+      //  ...DevicePreview.defaultTools,
+      ],
+      builder: (context) => const MyApp(), // Wrap your app with MyApp
+    ),
+   // const MyApp(),
+  );
 }
 
 class MyApp extends StatelessWidget {
@@ -23,7 +34,7 @@ class MyApp extends StatelessWidget {
     return ScreenUtilInit(
       minTextAdapt: true,
       splitScreenMode: true,
-      designSize: const Size(393, 852),
+      designSize: const Size(393, 852), // Adjust this according to your design size
       child: GetMaterialApp(
         theme: ThemeData(
           scaffoldBackgroundColor: AppColors.white,
@@ -41,6 +52,8 @@ class MyApp extends StatelessWidget {
         initialRoute: AppRoutes.splashScreen,
         navigatorKey: Get.key,
         getPages: AppRoutes.routes,
+        locale: DevicePreview.locale(context), // Add locale support for DevicePreview
+        builder: DevicePreview.appBuilder, // Wrap with DevicePreview builder
       ),
     );
   }

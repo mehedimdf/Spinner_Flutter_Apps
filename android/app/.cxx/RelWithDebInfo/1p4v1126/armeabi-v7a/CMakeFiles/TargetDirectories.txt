@@ -1,0 +1,2 @@
+/Users/mehedi/spinner_apps/android/app/.cxx/RelWithDebInfo/1p4v1126/armeabi-v7a/CMakeFiles/edit_cache.dir
+/Users/mehedi/spinner_apps/android/app/.cxx/RelWithDebInfo/1p4v1126/armeabi-v7a/CMakeFiles/rebuild_cache.dir

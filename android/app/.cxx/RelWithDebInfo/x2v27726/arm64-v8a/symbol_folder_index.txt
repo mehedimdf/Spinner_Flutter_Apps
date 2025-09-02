@@ -1,0 +1,1 @@
+/Users/mehedi/spinner_apps/build/app/intermediates/cxx/RelWithDebInfo/x2v27726/obj/arm64-v8a
